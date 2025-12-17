@@ -17,10 +17,6 @@ use Symfony\Component\Dotenv\Dotenv;
  */
 class DotEnvLoader
 {
-    /**
-     * Default environment if APP_ENV is not set
-     */
-    private const DEFAULT_ENV = 'prod';
 
     /**
      * Load .env files from the specified path
@@ -68,12 +64,12 @@ class DotEnvLoader
      * 1. $_ENV['APP_ENV'] if already set
      * 2. $_SERVER['APP_ENV'] if already set
      * 3. Read from .env.local if exists
-     * 4. Default to 'prod'
+     * 4. Return null if not found (no environment-specific files will be loaded)
      *
      * @param string $path Base path
-     * @return string Environment name
+     * @return string|null Environment name or null if not set
      */
-    private static function determineEnvironment(string $path): string
+    private static function determineEnvironment(string $path): ?string
     {
         // Check if already set in environment
         if (!empty($_ENV['APP_ENV'])) {
@@ -98,23 +94,30 @@ class DotEnvLoader
             }
         }
 
-        return self::DEFAULT_ENV;
+        // No APP_ENV found - only load .env and .env.local
+        return null;
     }
 
     /**
      * Build list of .env files to load in order
      *
      * @param string $path Base path
-     * @param string $appEnv Environment name
+     * @param string|null $appEnv Environment name (null if not specified)
      * @return array List of absolute file paths
      */
-    private static function buildFileList(string $path, string $appEnv): array
+    private static function buildFileList(string $path, ?string $appEnv): array
     {
-        return [
+        $files = [
             $path . '/.env',
             $path . '/.env.local',
-            $path . '/.env.' . $appEnv,
-            $path . '/.env.' . $appEnv . '.local',
         ];
+
+        // Only add environment-specific files if APP_ENV is set
+        if ($appEnv !== null) {
+            $files[] = $path . '/.env.' . $appEnv;
+            $files[] = $path . '/.env.' . $appEnv . '.local';
+        }
+
+        return $files;
     }
 }

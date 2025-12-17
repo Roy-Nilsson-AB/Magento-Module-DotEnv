@@ -69,7 +69,8 @@ class ShowEnvCommand extends Command
                 if (preg_match('/(PASSWORD|PASS|SECRET|KEY|TOKEN)/i', $key)) {
                     $displayValue = '***HIDDEN***';
                 } else {
-                    $displayValue = strlen($value) > 80 ? substr($value, 0, 77) . '...' : $value;
+                    $valueStr = (string)$value;
+                    $displayValue = strlen($valueStr) > 80 ? substr($valueStr, 0, 77) . '...' : $valueStr;
                 }
                 $output->writeln("  <info>{$key}</info> = {$displayValue}");
             }

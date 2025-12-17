@@ -46,6 +46,13 @@ class DotEnvLoader
                     $dotenv->load($file);
                 }
             }
+
+            // Also populate putenv() so getenv() works (needed for Magento's #env() syntax)
+            foreach ($_ENV as $key => $value) {
+                if (is_string($value)) {
+                    putenv("$key=$value");
+                }
+            }
         } catch (\Throwable $e) {
             // Log error but don't break the application
             error_log(sprintf(

@@ -15,7 +15,8 @@
     },
     "autoload": {
         "files": [
-            "src/prepend.php"
+            "src/prepend.php",
+            "src/registration.php"
         ],
         "psr-4": {
             "Rnab\\DotEnv\\": "src/"

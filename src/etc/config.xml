@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <dotenv>
+            <protection>
+                <!-- Protect env.php by default - configuration via .env files -->
+                <protect_env_php>1</protect_env_php>
+                <!-- Do NOT protect config.php by default - allow module management -->
+                <protect_config_php>0</protect_config_php>
+            </protection>
+        </dotenv>
+    </default>
+</config>

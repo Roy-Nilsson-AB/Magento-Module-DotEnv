@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="advanced">
+            <group id="dotenv" translate="label" type="text" sortOrder="150" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Environment Configuration</label>
+                <comment><![CDATA[Settings for .env file support and configuration file protection]]></comment>
+                
+                <field id="protect_env_php" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Protect env.php from writes</label>
+                    <comment><![CDATA[When enabled, prevents commands like 'config:set --lock' from writing to env.php. Configuration should be managed via .env files instead.]]></comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>dotenv/protection/protect_env_php</config_path>
+                </field>
+                
+                <field id="protect_config_php" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Protect config.php from writes</label>
+                    <comment><![CDATA[When enabled, prevents module enable/disable and config dump commands from writing to config.php. Useful when config.php is managed via version control.]]></comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>dotenv/protection/protect_config_php</config_path>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

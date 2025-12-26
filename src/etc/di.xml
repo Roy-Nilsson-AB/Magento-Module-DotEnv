@@ -1,10 +1,9 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <type name="Magento\Framework\Console\CommandList">
-        <arguments>
-            <argument name="commands" xsi:type="array">
-                <item name="dotenv_show" xsi:type="object">Rnab\DotEnv\Console\Command\ShowEnvCommand</item>
-            </argument>
-        </arguments>
+    <!-- Plugin to prevent writes to config files -->
+    <type name="Magento\Framework\App\DeploymentConfig\Writer">
+        <plugin name="rnab_dotenv_prevent_config_write" 
+                type="Rnab\DotEnv\Plugin\PreventConfigFileWritePlugin" 
+                sortOrder="10" />
     </type>
 </config>

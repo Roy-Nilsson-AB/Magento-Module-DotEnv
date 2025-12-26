@@ -233,6 +233,59 @@ This ensures `.env` files are loaded before Magento reads any configuration.
 2. Verify variable naming follows Magento conventions (e.g., `CONFIG__DEFAULT__*`)
 3. Check that variables are set before Magento reads them (module loads early, but some CLI commands may bypass this)
 
+
+## Configuration File Protection
+
+The module includes protection for `env.php` and `config.php` to prevent accidental overwrites by Magento commands.
+
+### Protection Settings
+
+Protection is configured via **Stores > Configuration > Advanced > Environment Configuration**:
+
+- **Protect env.php from writes** (enabled by default)
+  - Prevents commands like `config:set --lock` from writing to env.php
+  - Configuration should be managed via `.env` files instead
+  
+- **Protect config.php from writes** (disabled by default)
+  - Prevents module enable/disable and config dump commands from writing to config.php
+  - Useful when config.php is managed via version control
+
+### Why Protection?
+
+When managing configuration via `.env` files or version control, you don't want Magento commands to accidentally overwrite your carefully managed files:
+
+**Without Protection:**
+```bash
+# Whoops! This will overwrite your env.php
+bin/magento config:set --lock web/unsecure/base_url https://example.com
+```
+
+**With Protection (default):**
+```bash
+# Safely blocked with helpful error message
+bin/magento config:set --lock web/unsecure/base_url https://example.com
+# Error: env.php is protected from writes. Configuration should be managed via .env files.
+```
+
+### When to Enable/Disable Protection
+
+**env.php Protection (enabled by default):**
+- ✅ Keep enabled when using `.env` files for configuration
+- ❌ Disable only for emergency fixes or migration tasks
+
+**config.php Protection (disabled by default):**
+- ✅ Enable when config.php is managed via version control and you want to prevent module changes
+- ❌ Keep disabled when developers need to enable/disable modules or run `app:config:dump`
+
+### Disabling Protection
+
+If you need to temporarily disable protection (e.g., for data migration or emergencies):
+
+1. Go to **Stores > Configuration > Advanced > Environment Configuration**
+2. Set "Protect env.php from writes" to "No"
+3. Run your command
+4. Re-enable protection immediately after
+
 ## License
 
 Proprietary

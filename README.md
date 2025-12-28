@@ -245,10 +245,22 @@ Protection is configured via **Stores > Configuration > Advanced > Environment C
 - **Protect env.php from writes** (enabled by default)
   - Prevents commands like `config:set --lock` from writing to env.php
   - Configuration should be managed via `.env` files instead
-  
+
 - **Protect config.php from writes** (disabled by default)
   - Prevents module enable/disable and config dump commands from writing to config.php
   - Useful when config.php is managed via version control
+
+### How Protection Works
+
+When protection is enabled, the module **silently prevents writes** to the protected files:
+
+- Writes are intercepted before they happen
+- The protected file data is removed from the write operation
+- A warning is logged to `system.log`
+- The command continues normally without errors
+- Other files (if any) in the same operation are still written
+
+This approach ensures commands like `setup:upgrade` can complete successfully while still protecting your configuration files.
 
 ### Why Protection?
 
@@ -262,9 +274,9 @@ bin/magento config:set --lock web/unsecure/base_url https://example.com
 
 **With Protection (default):**
 ```bash
-# Safely blocked with helpful error message
+# Write is silently prevented, warning logged to system.log
 bin/magento config:set --lock web/unsecure/base_url https://example.com
-# Error: env.php is protected from writes. Configuration should be managed via .env files.
+# Command completes successfully, env.php unchanged
 ```
 
 ### When to Enable/Disable Protection

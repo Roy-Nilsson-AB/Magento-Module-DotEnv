@@ -6,7 +6,6 @@ namespace Rnab\DotEnv\Plugin;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\DeploymentConfig\Writer;
 use Magento\Framework\Config\File\ConfigFilePool;
-use Magento\Framework\Exception\FileSystemException;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -45,6 +44,10 @@ class PreventConfigFileWritePlugin
     /**
      * Prevent writing to config files if protection is enabled
      *
+     * Silently removes protected file data from the write operation and logs a warning.
+     * This allows commands like setup:upgrade to continue without errors while still
+     * protecting the files from being modified.
+     *
      * @param Writer $subject
      * @param array $data
      * @param bool $override
@@ -52,7 +55,6 @@ class PreventConfigFileWritePlugin
      * @param array $comments
      * @param bool $lock
      * @return array|null
-     * @throws FileSystemException
      */
     public function beforeSaveConfig(
         Writer $subject,
@@ -65,37 +67,31 @@ class PreventConfigFileWritePlugin
         $protectEnv = $this->scopeConfig->isSetFlag(self::CONFIG_PATH_PROTECT_ENV);
         $protectConfig = $this->scopeConfig->isSetFlag(self::CONFIG_PATH_PROTECT_CONFIG);
 
-        foreach ($data as $fileKey => $config) {
-            if ($fileKey === ConfigFilePool::APP_ENV && $protectEnv) {
-                $this->logger->warning(
-                    'Blocked attempt to write to env.php. File is protected by RNAB DotEnv module. ' .
-                    'Configuration should be managed via .env files. ' .
-                    'To disable protection, go to Stores > Configuration > Advanced > Environment Configuration.'
-                );
-                
-                throw new FileSystemException(
-                    __(
-                        'env.php is protected from writes. Configuration should be managed via .env files. ' .
-                        'To disable protection, go to Stores > Configuration > Advanced > Environment Configuration.'
-                    )
-                );
-            }
+        $modified = false;
 
-            if ($fileKey === ConfigFilePool::APP_CONFIG && $protectConfig) {
-                $this->logger->warning(
-                    'Blocked attempt to write to config.php. File is protected by RNAB DotEnv module. ' .
-                    'To disable protection, go to Stores > Configuration > Advanced > Environment Configuration.'
-                );
-                
-                throw new FileSystemException(
-                    __(
-                        'config.php is protected from writes. ' .
-                        'To disable protection, go to Stores > Configuration > Advanced > Environment Configuration.'
-                    )
-                );
-            }
+        // Remove protected files from the data array
+        if (isset($data[ConfigFilePool::APP_ENV]) && $protectEnv) {
+            unset($data[ConfigFilePool::APP_ENV]);
+            $modified = true;
+
+            $this->logger->warning(
+                'Prevented write to env.php. File is protected by RNAB DotEnv module. ' .
+                'Configuration should be managed via .env files. ' .
+                'To disable protection, go to Stores > Configuration > Advanced > Environment Configuration.'
+            );
         }
 
-        return null;
+        if (isset($data[ConfigFilePool::APP_CONFIG]) && $protectConfig) {
+            unset($data[ConfigFilePool::APP_CONFIG]);
+            $modified = true;
+
+            $this->logger->warning(
+                'Prevented write to config.php. File is protected by RNAB DotEnv module. ' .
+                'To disable protection, go to Stores > Configuration > Advanced > Environment Configuration.'
+            );
+        }
+
+        // Only return modified data if we actually changed something
+        return $modified ? [$data, $override, $pool, $comments, $lock] : null;
     }
 }
